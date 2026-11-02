@@ -6,5 +6,7 @@
 # True and paste the address of the site itself
 # (https://<username>.github.io/<repository>/) and of the public repository.
 I_HAVE_DEPLOYED_MY_MONITOR = False
-URL_TO_MY_MONITOR_SITE = "YOUR_SITE_URL"
-URL_TO_MY_PUBLIC_REPO = "YOUR_REPO_URL"
+# Pages currently serves a Waiting for data page. Keep the flag false
+# until a credentialed, zero-cost pipeline run publishes real results.
+URL_TO_MY_MONITOR_SITE = "https://garymmmjw.github.io/svix-crash-monitor/"
+URL_TO_MY_PUBLIC_REPO = "https://github.com/garymmmjw/svix-crash-monitor"
