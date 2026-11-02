@@ -8,6 +8,5 @@ URL_TO_MY_COMPLETED_HELLO_GITHUB_ACTIONS_REPO = "https://github.com/garymmmjw/fi
 # Complete the GitHub Skills tutorial below, then set the flag to True and
 # paste the URL of YOUR completed public repository.
 # https://github.com/skills/introduction-to-secret-scanning
-I_HAVE_COMPLETED_SECRET_SCANNING = False
-# Exercise created; the security-setting training steps remain pending.
+I_HAVE_COMPLETED_SECRET_SCANNING = True
 URL_TO_MY_COMPLETED_SECRET_SCANNING_REPO = "https://github.com/garymmmjw/finm32800-introduction-to-secret-scanning"
