@@ -9,8 +9,8 @@ rows into the history CSV, ``_output/svix_monitor_history.csv``, one row per
 session, oldest first.
 
 The GitHub Actions workflow runs ``doit latest`` every morning: restore the
-history from the ``monitor-history`` branch, pull the latest session, append
-its row if the CSV does not have it, rebuild the page, record the CSV on
+history from the ``monitor-history`` branch, pull the recent sessions, refresh
+their rows so late corrections are included, rebuild the page, record the CSV on
 that branch again, publish the page. So the chart on the page grows by one
 point a day without anyone touching it, and ``main`` holds only source code. The default
 ``doit`` runs the same computation over the window in the settings, which is
@@ -117,9 +117,11 @@ def append_history(new_rows, path=HISTORY_CSV):
 
     A session already in the file is replaced by its new row (a late
     correction wins), so running the monitor twice on the same day is
-    harmless.
+    harmless. A missing new VIX does not erase a previously available close.
     """
     history = load_history(path)
+    if "vix" in history and "vix" in new_rows:
+        new_rows, _ = fill_missing_vix(new_rows, history)
     merged = pd.concat([history, new_rows], ignore_index=True)
     merged = merged.drop_duplicates(subset=["date"], keep="last").sort_values("date")
     merged = merged.reset_index(drop=True)
@@ -151,20 +153,24 @@ def write_history(history, path=HISTORY_CSV):
     history.to_csv(path, index=False, float_format="%.8g", date_format="%Y-%m-%d")
 
 
-if __name__ == "__main__":
+def main():
     from pull_es_options import load_es_options
     from pull_fred import load_fred
 
     options = load_es_options()
     fred = load_fred()
-    known = set(load_history()["date"]) if HISTORY_CSV.exists() else set()
-    todo = sorted(d for d in options["date"].unique() if pd.Timestamp(d) not in known)
-    print(f"Sessions in the pull: {options['date'].nunique()}; new to the history: {len(todo)}")
-    new_rows = compute_history(options, fred, dates=todo) if todo else pd.DataFrame()
-    history = append_history(new_rows) if not new_rows.empty else load_history()
+    print(f"Refreshing {options['date'].nunique()} session(s) from the pull")
+    # The pull overlaps recent history. Recompute those dates so a corrected
+    # settlement replaces its earlier result; append_history keeps other dates.
+    new_rows = compute_history(options, fred)
+    history = (
+        append_history(new_rows, path=HISTORY_CSV)
+        if not new_rows.empty
+        else load_history(HISTORY_CSV)
+    )
     history, n_filled = fill_missing_vix(history, fred)
     if n_filled:
-        write_history(history)
+        write_history(history, path=HISTORY_CSV)
         print(f"Filled the VIX for {n_filled} session(s) that entered the history before FRED posted it")
     latest = history.tail(1)
     Path(OUTPUT_DIR).mkdir(parents=True, exist_ok=True)
@@ -178,3 +184,7 @@ if __name__ == "__main__":
             f"log-investor = {100 * r['p_log_20']:.2f}%, gamma=2: {100 * r['p_power_20']:.2f}%"
         )
     print(f"History: {len(history)} session(s) in {HISTORY_CSV}")
+
+
+if __name__ == "__main__":
+    main()

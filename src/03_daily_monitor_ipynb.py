@@ -97,9 +97,9 @@ monitor_chart.plot_plotly(history).show()
 # %% [markdown]
 # ## What the workflow does
 #
-# `uv run doit latest` is the whole update. The task pulls the latest
-# session (cheap: 19 MB, $0.00, a minute or two), computes its row if the
-# history does not have it, appends it, and rebuilds the page from the
+# `uv run doit latest` is the whole update. The task pulls recent sessions,
+# refreshes their rows so corrected inputs update existing dates, preserves
+# older history, and rebuilds the page from the
 # history, `_output/monitor_page/index.html`. Run it on your laptop and it
 # does the same thing; open the page in a browser to see it. Plain `uv run doit` is the same
 # computation over the window in the settings, the trailing week unless you
@@ -157,7 +157,7 @@ monitor_chart.plot_plotly(history).show()
 # holds source code, and nothing a run produces belongs there. The workflow
 # keeps the one file, `svix_monitor_history.csv`, on a branch of its own,
 # `monitor-history`. Each morning it restores the file from there into
-# `_output/`, appends the new sessions, and commits the result back as one
+# `_output/`, refreshes the pulled sessions, and commits the result back as one
 # small commit, so the branch is the ledger of the series, one line a day,
 # and `git log -p` on it shows the chart being built point by point. The
 # page itself sits on `gh-pages` as a single commit that each run replaces.
